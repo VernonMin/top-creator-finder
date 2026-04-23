@@ -36,7 +36,9 @@ Actor 抓取 broadcast 与 shop 页面，并把结果增量写入 dataset
 ```
 top-creator-finder/
 ├── README.md                           # 项目说明（本文件）
-├── solution.txt                        # 项目方案文档
+├── SOLUTION.md                         # 权威技术方案文档
+├── solution.txt                        # 早期方案草稿
+├── render.yaml                         # Render 部署配置
 ├── actors/
 │   └── amazon-live-creators-scraper/   # Actor 1: Amazon Live 爬虫
 │       ├── main.js                      # 爬虫主逻辑
@@ -51,6 +53,8 @@ top-creator-finder/
 │   ├── api/
 │   │   ├── apify.js                    # Apify API 封装
 │   │   └── routes.js                   # API 路由
+│   ├── config/
+│   │   └── categories.js               # 品类配置（前后端共用来源）
 │   ├── package.json
 │   ├── .env                            # 环境变量（用户填写）
 │   └── .env.example
@@ -118,6 +122,8 @@ npm start
 应用启动后，Express 会同时提供：
 - `/api/*` API 接口
 - `/` 前端页面
+
+如果你修改了 [actors/amazon-live-creators-scraper/main.js](/Users/minzhuo/develop/ai-project/top-creator-finder/actors/amazon-live-creators-scraper/main.js)，需要重新发布 Actor 到 Apify，前端和后端的新逻辑才会在云端生效。
 
 ### 第 3 步：测试后端连接
 
@@ -278,9 +284,9 @@ http://localhost:3000
 
 | 操作 | 频率 | 成本 |
 |-----|------|------|
-| Amazon Live 爬虫 | 1 次 | $0.02-0.10 |
-| Profile 验证（100 个创作者） | 1 次 | $0.50 |
-| **单次搜索总计** | 1 次 | $0.52-0.60 |
+| Playwright 浏览抓取 | 1 次 | 取决于品类页数据量 |
+| Shop 验证请求 | 按候选 Creator 数量 | 取决于验证数量 |
+| **单次搜索总计** | 1 次 | 可在页面中查看 `本次成本 (costUsd)` |
 | **月度成本** | 每周 1 次 | $2-3 |
 
 ### 性能指标
