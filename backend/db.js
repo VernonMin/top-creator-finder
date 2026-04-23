@@ -14,7 +14,7 @@ function getClient() {
     return supabase;
 }
 
-export async function upsertRun({ runId, category, maxResults, country, status, topCreatorsCount, totalCreators, costUsd, isFinished }) {
+export async function upsertRun({ runId, category, maxResults, country, status, topCreatorsCount, totalCreators, costUsd, isFinished, creators }) {
     const client = getClient();
     if (!client) return;
 
@@ -28,6 +28,7 @@ export async function upsertRun({ runId, category, maxResults, country, status, 
         total_creators: totalCreators || 0,
         cost_usd: costUsd ?? null,
         is_finished: isFinished,
+        ...(creators ? { creators } : {}),
         ...(isFinished ? { finished_at: new Date().toISOString() } : {}),
     };
 

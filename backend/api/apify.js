@@ -135,6 +135,7 @@ export async function getTopCreatorsSearchStatus(runId, category, maxResults = 5
         totalCreators: payload.stats.totalCreators,
         costUsd: payload.stats.costUsd,
         isFinished: payload.isFinished,
+        creators: payload.topCreators,
     });
 
     return payload;

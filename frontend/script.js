@@ -617,16 +617,53 @@ function renderHistory(runs) {
             ? `<button class="hi-resume" onclick="resumeRun('${run.id}','${run.category}',${run.max_results})">Resume</button>`
             : '';
 
+        const hasCreators = run.creators && run.creators.length > 0;
+        const viewBtn = hasCreators
+            ? `<button class="hi-view" onclick="openModal(${JSON.stringify(JSON.stringify(run.creators))}, '${escapeHtml(run.category)}', '${time}')">View</button>`
+            : '';
+
         return `
         <div class="history-item">
             <span class="hi-category">${escapeHtml(run.category)}</span>
             <span class="hi-stats">Top: ${run.top_creators_count} / ${run.total_creators} · max ${run.max_results}${run.cost_usd != null ? ` · $${Number(run.cost_usd).toFixed(4)}` : ''}</span>
             <span class="hi-status ${statusClass}">${statusLabel}</span>
             <span class="hi-time">${time}</span>
+            ${viewBtn}
             ${resumeBtn}
         </div>`;
     }).join('');
 }
+
+function openModal(creatorsJson, category, time) {
+    const creators = JSON.parse(creatorsJson);
+    document.getElementById('modalTitle').textContent = `${category} — ${time}`;
+    const body = document.getElementById('modalBody');
+
+    if (!creators || creators.length === 0) {
+        body.innerHTML = '<p class="modal-empty">No Top Creators found in this run.</p>';
+    } else {
+        body.innerHTML = creators.map((c, i) => `
+            <div class="modal-creator">
+                <span style="font-size:12px;font-weight:700;color:var(--text-secondary);min-width:24px">${i + 1}</span>
+                <div class="modal-creator-name">
+                    <a href="${c.profileUrl}" target="_blank">@${escapeHtml(c.username)}</a>
+                    <div class="modal-creator-display">${escapeHtml(c.displayName)}</div>
+                </div>
+                <button class="btn btn-secondary action-btn" style="height:28px;font-size:12px" onclick="copyToClipboard('${c.username}')">📋 Copy</button>
+            </div>`).join('');
+    }
+
+    document.getElementById('historyModal').style.display = 'flex';
+}
+
+function closeModal() {
+    document.getElementById('historyModal').style.display = 'none';
+}
+
+// 点击遮罩关闭
+document.getElementById('historyModal').addEventListener('click', (e) => {
+    if (e.target.id === 'historyModal') closeModal();
+});
 
 function resumeRun(runId, category, maxResults) {
     state.currentSearch = { runId, category, country: 'US', maxResults };
