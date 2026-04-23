@@ -7,7 +7,9 @@
 ### 功能
 - ✅ 按品类自动搜索 Amazon Live 创作者
 - ✅ 验证创作者的 Top Creator 身份（Platinum 等级）
+- ✅ 分开展示 Creator 与 Top Creator
 - ✅ 展示创作者的详细信息（用户名、简介、帖子数等）
+- ✅ 展示每次运行的 Apify 成本
 - ✅ 支持排序、筛选、导出功能
 - ✅ 美观的响应式界面
 
@@ -150,7 +152,7 @@ http://localhost:3000
 4. 页面会自动轮询任务状态，并逐步展示已验证出的结果
 5. 查看结果：
    - **⭐ Top Creator** - 官方认证的 Platinum 级创作者
-   - **📋 所有创作者** - 包括其他等级的创作者
+   - **📋 Creator** - 本次任务已验证过的全部创作者
 6. 可以：
    - 📋 **复制** 用户名
    - 🔗 **访问** 创作者的 Amazon 店铺
@@ -220,6 +222,7 @@ http://localhost:3000
       "category": "electronics",
       "country": "US",
       "maxResults": 50,
+      "costUsd": 0.0123,
       "timestamp": "2026-04-23T10:30:00Z",
       "runStatus": "RUNNING",
       "isFinished": false

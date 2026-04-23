@@ -34,7 +34,7 @@ function mapActorItem(item) {
         username: item.username,
         displayName: item.displayName || item.username,
         profileUrl: item.shopUrl || `https://www.amazon.com/shop/${item.username}`,
-        topCreatorStatus: true,
+        topCreatorStatus: Boolean(item.isTopCreator),
         bio: '',
         postsCount: 0,
         timestamp: item.scrapedAt || new Date().toISOString(),
@@ -42,17 +42,22 @@ function mapActorItem(item) {
 }
 
 function buildSearchPayload(items, { category, country, maxResults, run }) {
-    const topCreators = items
+    const allCreators = items
         .filter((item) => item.username)
         .map(mapActorItem);
+    const topCreators = allCreators.filter((item) => item.topCreatorStatus);
+    const costUsd = typeof run.usageTotalUsd === 'number' ? run.usageTotalUsd : null;
 
     const stats = {
-        totalCreators: topCreators.length,
+        totalCreators: allCreators.length,
         topCreatorsCount: topCreators.length,
-        topCreatorPercentage: topCreators.length > 0 ? '100.00' : '0.00',
+        topCreatorPercentage: allCreators.length > 0
+            ? ((topCreators.length / allCreators.length) * 100).toFixed(2)
+            : '0.00',
         category,
         country,
         maxResults,
+        costUsd,
         timestamp: new Date().toISOString(),
         runStatus: run.status,
         isFinished: TERMINAL_STATUSES.has(run.status),
@@ -64,7 +69,7 @@ function buildSearchPayload(items, { category, country, maxResults, run }) {
         status: run.status,
         isFinished: TERMINAL_STATUSES.has(run.status),
         topCreators,
-        allCreators: topCreators,
+        allCreators,
         stats,
         category,
         country,

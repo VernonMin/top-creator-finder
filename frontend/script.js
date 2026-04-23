@@ -43,6 +43,7 @@ const DOM = {
     totalCreators: document.getElementById('totalCreators'),
     topCreatorsCount: document.getElementById('topCreatorsCount'),
     topCreatorPercentage: document.getElementById('topCreatorPercentage'),
+    runCost: document.getElementById('runCost'),
     updateTime: document.getElementById('updateTime'),
 
     // 计数
@@ -283,6 +284,7 @@ function displayResults(data) {
     DOM.totalCreators.textContent = stats.totalCreators;
     DOM.topCreatorsCount.textContent = stats.topCreatorsCount;
     DOM.topCreatorPercentage.textContent = stats.topCreatorPercentage + '%';
+    DOM.runCost.textContent = formatCost(stats.costUsd);
     DOM.updateTime.textContent = formatTime(stats.timestamp);
 
     // 更新计数
@@ -561,6 +563,14 @@ function formatTime(timestamp) {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
+}
+
+function formatCost(costUsd) {
+    if (typeof costUsd !== 'number' || Number.isNaN(costUsd)) {
+        return '$0.00';
+    }
+
+    return `$${costUsd.toFixed(4)}`;
 }
 
 console.log('✓ Script loaded');
