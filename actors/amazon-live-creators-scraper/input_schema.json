@@ -1,0 +1,33 @@
+{
+  "title": "Amazon Live Creators Scraper Input",
+  "description": "配置 Amazon Live 创作者爬虫的输入参数",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "category": {
+      "title": "品类（Category）",
+      "description": "Amazon Live 的品类，如 'featured', 'electronics', 'fashion', 'beauty', 'fitness', 'food', 'home', 'garden', 'pets', 'sports' 等",
+      "type": "string",
+      "default": "featured",
+      "example": "electronics",
+      "editor": "textfield"
+    },
+    "maxResults": {
+      "title": "最大结果数",
+      "description": "最多爬取多少个创作者（1-500）",
+      "type": "integer",
+      "default": 50,
+      "minimum": 1,
+      "maximum": 500,
+      "editor": "number"
+    },
+    "startUrl": {
+      "title": "自定义起始URL（可选）",
+      "description": "如果要爬虫 Amazon Live 以外的其他页面，可以在这里指定完整URL",
+      "type": "string",
+      "example": "https://www.amazon.com/live/browse/electronics",
+      "editor": "textfield"
+    }
+  },
+  "required": ["category"]
+}

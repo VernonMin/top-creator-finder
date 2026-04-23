@@ -1,0 +1,75 @@
+
+
+# 项目需求：亚马逊Top Creator红人挖掘工具
+
+我需要一个Web应用，输入品类关键词，自动挖掘亚马逊Top Creator红人并展示。
+
+## 核心功能
+
+1. **输入**：一个文本框，输入品类关键词（如 "coffee maker"）
+2. **处理**：
+   - 调用Apify API，从亚马逊搜索页抓取产品列表
+   - 提取所有视频红人的用户名
+   - 批量验证哪些是Top Creator
+3. **输出**：可视化表格/卡片，展示红人信息
+
+## 技术栈要求
+- 部署：可以在cloudflare上免费部署
+- 异步处理：Apify调用需要时间，前端要有loading状态
+
+## Apify API 配置
+
+需要调用两个Actor：
+
+### Actor 1: amazon-product-scraper
+输入示例：
+```json
+{
+  "startUrls": [{"url": "https://www.amazon.com/s?k={品类关键词}"}],
+  "maxItems": 50,
+  "extractDetails": true
+}
+
+Actor 2: amazon-influencers-profile-scraper
+输入示例:
+{
+  "influencer_names": ["用户名1", "用户名2"],
+  "country": "US"
+}
+从返回结果筛选 is_top_creator === true 的记录。
+
+
+可视化页面设计要求
+红人信息用表格展示，包含以下列：
+
+红人用户名（带链接，可点击跳转亚马逊店铺）
+
+是否为Top Creator（徽章标识）
+
+帖子数量
+
+简介（截断显示，hover展示完整）
+
+操作按钮：复制用户名、导出CSV
+
+页面布局：
+
+顶部：搜索输入框 + 搜索按钮
+
+中间：加载时显示骨架屏或进度提示
+
+底部：结果表格，支持按用户名排序、按Top Creator筛选
+
+环境变量
+Apify API Token 从 .env 文件读取：
+如：
+APIFY_API_TOKEN=xxx
+
+交付要求
+提供完整的项目代码，包含前后端
+
+提供 README.md，说明如何安装依赖、配置环境变量、运行
+
+	代码要能直接复制粘贴后运行，不需要额外修改
+
+Apify的Actor ID可能会变化。如果 `apify/amazon-product-scraper` 不可用，请搜索Apify Store找到当前可用的Amazon Product Scraper Actor，并在代码中替换。处理API调用时要做好错误处理和超时控制。

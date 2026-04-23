@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:affiliate-program.amazon.com)",
+      "WebFetch(domain:www.junglescout.com)",
+      "WebFetch(domain:apify.com)",
+      "Bash(curl -s \"https://www.amazon.com/s?k=coffee+maker\" -H \"User-Agent: Mozilla/5.0 \\(Macintosh; Intel Mac OS X 10_15_7\\) AppleWebKit/537.36 \\(KHTML, like Gecko\\) Chrome/120.0.0.0 Safari/537.36\" -H \"Accept-Language: en-US,en;q=0.9\" --max-time 15)",
+      "Bash(curl -s \"https://apify.com/docs/sdk/js\" --max-time 15)",
+      "Bash(curl *)",
+      "Bash(python3 -c \"import sys,json; [print\\(x['name']\\) for x in json.load\\(sys.stdin\\) if isinstance\\(x,dict\\) and 'name' in x]\")",
+      "Bash(python3 -c \" import sys, json data = json.load\\(sys.stdin\\) items = data.get\\('data', {}\\).get\\('items', []\\) for a in items: print\\('ID:', a.get\\('id'\\)\\) print\\('Name:', a.get\\('name'\\)\\) print\\('Title:', a.get\\('title',''\\)\\) print\\('Username:', a.get\\('username',''\\)\\) print\\('---'\\) \")",
+      "Bash(python3 -c \" import sys, json try: data = json.load\\(sys.stdin\\) items = data.get\\('data', {}\\).get\\('items', []\\) for a in items: print\\('ID:', a.get\\('id'\\)\\) print\\('Name:', a.get\\('name'\\)\\) print\\('Title:', a.get\\('title',''\\)\\) print\\('---'\\) except Exception as e: print\\('Error:', e\\) sys.stdin.seek\\(0\\) print\\(sys.stdin.read\\(\\)[:500]\\) \")",
+      "Bash(python3 -c \" import sys, json raw = sys.stdin.read\\(\\) print\\(raw[:2000]\\) \")",
+      "Bash(python3 -c \" import sys, json raw = sys.stdin.read\\(\\) try: data = json.loads\\(raw\\) d = data.get\\('data', {}\\) print\\('Name:', d.get\\('name'\\)\\) print\\('Title:', d.get\\('title'\\)\\) print\\('Description:', d.get\\('description',''\\)[:300]\\) print\\('Username:', d.get\\('username'\\)\\) print\\('Stats:', d.get\\('stats'\\)\\) except: print\\(raw[:1000]\\) \")",
+      "WebFetch(domain:www.amazon.com)",
+      "Bash(grep -oE 'browse[^\"]{0,100}' /tmp/amazon_live.html)",
+      "Bash(grep -oE 'endpoints[^}]{0,200}' /tmp/amazon_live.html)",
+      "Bash(grep -oE 'broadcast[^\"]{0,80}' /tmp/amazon_live.html)",
+      "Bash(grep -v '^$')",
+      "Bash(node app.js)",
+      "Bash(python3 -m json.tool)",
+      "Bash(xargs kill *)",
+      "Bash(npm show *)",
+      "Bash(node -e \"import\\('apify-client'\\).then\\(m => console.log\\(Object.keys\\(m\\)\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); runs=d.get\\('data',{}\\).get\\('items',[]\\); print\\(f'Running: {len\\(runs\\)}'\\); [print\\(f'  {r[\\\\\"id\\\\\"]} started {r[\\\\\"startedAt\\\\\"]}'\\) for r in runs]\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(d.get\\('data',{}\\).get\\('status','?'\\)\\)\")"
+    ]
+  }
+}

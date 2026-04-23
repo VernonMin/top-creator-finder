@@ -1,0 +1,10 @@
+{
+  "actorSpecification": 1,
+  "name": "amazon-live-creators-scraper",
+  "title": "Amazon Live Creators Scraper",
+  "description": "从 Amazon Live 按品类浏览页面爬取 Top Creator 红人信息",
+  "version": "0.1",
+  "buildTag": "latest",
+  "dockerfile": "../Dockerfile",
+  "input": "../input_schema.json"
+}

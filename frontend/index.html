@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon Top Creator 挖掘工具</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 页面头部 -->
+        <header class="header">
+            <h1>🔍 Amazon Top Creator 挖掘工具</h1>
+            <p class="subtitle">输入品类，自动找到亚马逊top creator红人</p>
+        </header>
+
+        <!-- 搜索区域 -->
+        <section class="search-section">
+            <div class="search-container">
+                <!-- 品类选择 -->
+                <div class="form-group">
+                    <label for="category">选择品类 *</label>
+                    <select id="category" class="form-control">
+                        <option value="">-- 选择一个品类 --</option>
+                        <option value="featured">📌 所有精选创作者</option>
+                        <option value="electronics">🔌 电子产品</option>
+                        <option value="fashion">👗 时尚</option>
+                        <option value="beauty">💄 美妆</option>
+                        <option value="fitness">💪 健身</option>
+                        <option value="food">🍽️ 食物</option>
+                        <option value="home">🏠 家居</option>
+                        <option value="garden">🌱 园艺</option>
+                        <option value="pets">🐾 宠物</option>
+                        <option value="sports">⚽ 运动</option>
+                        <option value="toys">🎮 玩具</option>
+                        <option value="books">📚 图书</option>
+                        <option value="music">🎵 音乐</option>
+                        <option value="movies">🎬 电影</option>
+                        <option value="jewelry">💍 珠宝</option>
+                    </select>
+                </div>
+
+                <!-- 数量设置 -->
+                <div class="form-group">
+                    <label for="maxResults">最多结果数</label>
+                    <input
+                        type="number"
+                        id="maxResults"
+                        class="form-control"
+                        min="1"
+                        max="500"
+                        value="50"
+                        placeholder="默认 50"
+                    >
+                </div>
+
+                <!-- 搜索按钮 -->
+                <div class="form-group">
+                    <button id="searchBtn" class="btn btn-primary">
+                        <span class="btn-text">🔍 搜索</span>
+                        <span class="spinner" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 错误提示 -->
+            <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+            <!-- 统计信息 -->
+            <div id="statsContainer" class="stats-container" style="display: none;">
+                <div class="stat-item">
+                    <span class="stat-label">总创作者数</span>
+                    <span id="totalCreators" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Top Creator</span>
+                    <span id="topCreatorsCount" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">占比</span>
+                    <span id="topCreatorPercentage" class="stat-value">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">更新时间</span>
+                    <span id="updateTime" class="stat-value">--</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 结果展示区域 -->
+        <section id="resultsSection" class="results-section" style="display: none;">
+            <!-- 标签页 -->
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="top-creators">
+                    ⭐ Top Creator (<span id="topCount">0</span>)
+                </button>
+                <button class="tab-btn" data-tab="all-creators">
+                    📋 所有创作者 (<span id="allCount">0</span>)
+                </button>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="actions-bar">
+                <button id="exportBtn" class="btn btn-secondary">📥 导出 CSV</button>
+                <button id="sortBtn" class="btn btn-secondary">↕️ 按热度排序</button>
+            </div>
+
+            <!-- Top Creator 表格 -->
+            <div id="top-creators" class="tab-content active">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th width="15%">用户名</th>
+                            <th width="20%">显示名</th>
+                            <th width="35%">简介</th>
+                            <th width="10%">帖子数</th>
+                            <th width="20%">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topCreatorsBody">
+                        <!-- 动态生成 -->
+                    </tbody>
+                </table>
+                <div id="topCreatorsEmpty" class="empty-state">
+                    没有找到 Top Creator
+                </div>
+            </div>
+
+            <!-- 所有创作者表格 -->
+            <div id="all-creators" class="tab-content">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th width="15%">用户名</th>
+                            <th width="20%">显示名</th>
+                            <th width="35%">简介</th>
+                            <th width="10%">帖子数</th>
+                            <th width="20%">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allCreatorsBody">
+                        <!-- 动态生成 -->
+                    </tbody>
+                </table>
+                <div id="allCreatorsEmpty" class="empty-state">
+                    没有找到创作者
+                </div>
+            </div>
+        </section>
+
+        <!-- 加载提示 -->
+        <div id="loadingContainer" class="loading-container" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>正在爬取和验证数据...</p>
+            <p class="loading-tips">这可能需要 30-60 秒，请耐心等待 ⏳</p>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="footer">
+            <p>💡 提示：第一次搜索可能需要较长时间，请耐心等待</p>
+            <p>API 地址: <code id="apiUrl">http://localhost:3000</code></p>
+            <p>© 2026 Top Creator Finder | Powered by Apify</p>
+        </footer>
+    </div>
+
+    <!-- 复制成功提示 -->
+    <div id="copyToast" class="toast" style="display: none;">
+        ✓ 已复制到剪贴板
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
