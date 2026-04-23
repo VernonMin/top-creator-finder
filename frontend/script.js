@@ -562,7 +562,7 @@ function escapeHtml(text) {
 function formatRunTime(startedAt, finishedAt) {
     if (!startedAt) return '--';
     const end = finishedAt ? new Date(finishedAt) : new Date();
-    const secs = Math.floor((end - new Date(startedAt)) / 1000);
+    const secs = Math.max(0, Math.floor((end - new Date(startedAt)) / 1000));
     if (secs < 60) return `${secs}s`;
     const m = Math.floor(secs / 60);
     const s = secs % 60;

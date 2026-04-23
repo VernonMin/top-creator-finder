@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LiveHitFinder</title>
+    <title>CreatorHitFinder</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -23,7 +23,7 @@
         <!-- 页面头部 -->
         <header class="header">
             <div class="header-doraemon">
-                <svg width="90" height="90" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                <svg class="doraemon-svg" width="90" height="90" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
                     <!-- 身体 -->
                     <ellipse cx="100" cy="155" rx="62" ry="42" fill="#1296DB"/>
                     <!-- 白色肚子 -->
@@ -35,12 +35,12 @@
                     <!-- 眼睛白色部分 -->
                     <ellipse cx="78" cy="72" rx="18" ry="20" fill="white"/>
                     <ellipse cx="122" cy="72" rx="18" ry="20" fill="white"/>
-                    <!-- 眼珠 -->
-                    <circle cx="82" cy="76" r="10" fill="#1a1a2e"/>
-                    <circle cx="118" cy="76" r="10" fill="#1a1a2e"/>
+                    <!-- 眼珠（加class用于眨眼动画） -->
+                    <circle class="dora-eye" cx="82" cy="76" r="10" fill="#1a1a2e"/>
+                    <circle class="dora-eye" cx="118" cy="76" r="10" fill="#1a1a2e"/>
                     <!-- 眼睛高光 -->
-                    <circle cx="86" cy="72" r="4" fill="white"/>
-                    <circle cx="122" cy="72" r="4" fill="white"/>
+                    <circle class="dora-eye-shine" cx="86" cy="72" r="4" fill="white"/>
+                    <circle class="dora-eye-shine" cx="122" cy="72" r="4" fill="white"/>
                     <!-- 鼻子 -->
                     <circle cx="100" cy="94" r="9" fill="#E8002D"/>
                     <!-- 嘴巴 -->
@@ -57,16 +57,18 @@
                     <line x1="132" y1="118" x2="170" y2="124" stroke="#1a1a2e" stroke-width="2.5" stroke-linecap="round"/>
                     <!-- 红色领巾 -->
                     <ellipse cx="100" cy="137" rx="36" ry="8" fill="#E8002D"/>
-                    <!-- 铃铛 -->
-                    <circle cx="100" cy="143" r="8" fill="#FFD700"/>
-                    <circle cx="100" cy="143" r="3" fill="#b8960a"/>
+                    <!-- 铃铛（加class用于摆动） -->
+                    <g class="dora-bell" style="transform-origin: 100px 137px">
+                        <circle cx="100" cy="143" r="8" fill="#FFD700"/>
+                        <circle cx="100" cy="143" r="3" fill="#b8960a"/>
+                    </g>
                     <!-- 口袋 -->
                     <ellipse cx="100" cy="170" rx="26" ry="18" fill="white" stroke="#ccc" stroke-width="1.5"/>
                 </svg>
             </div>
             <div class="header-text">
-                <h1>LiveHitFinder</h1>
-                <p class="subtitle">Find live hits, boost your Amazon sales.</p>
+                <h1>CreatorHitFinder</h1>
+                <p class="subtitle">Find creator hits, boost your Amazon sales.</p>
             </div>
         </header>
 
@@ -90,7 +92,7 @@
 
                 <!-- 数量设置 -->
                 <div class="form-group">
-                    <label for="maxResults">Max Results</label>
+                    <label for="maxResults">Max Results <span class="tooltip-wrap">?<span class="tooltip-text">Maximum number of Top Creators to find. The search stops early once this limit is reached.</span></span></label>
                     <input
                         type="number"
                         id="maxResults"
@@ -218,7 +220,7 @@
         <!-- 页脚 -->
         <footer class="footer">
             <p>💡 Tip: First search may take a while, please be patient</p>
-            <p>© 2026 LiveHitFinder | Powered by Vernon_</p>
+            <p>© 2026 CreatorHitFinder | Powered by Vernon_</p>
         </footer>
     </div>
 
