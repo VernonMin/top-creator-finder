@@ -7,6 +7,18 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- 背景装饰道具 -->
+    <div class="bg-decorations" aria-hidden="true">
+        <span style="top:6%;left:3%;font-size:32px;animation-delay:0s">🚁</span>
+        <span style="top:12%;right:4%;font-size:26px;animation-delay:1.2s">🚪</span>
+        <span style="top:28%;left:1.5%;font-size:22px;animation-delay:0.6s">⭐</span>
+        <span style="top:42%;right:2%;font-size:28px;animation-delay:2s">🌟</span>
+        <span style="top:58%;left:2.5%;font-size:20px;animation-delay:1.5s">🔮</span>
+        <span style="top:70%;right:3%;font-size:24px;animation-delay:0.3s">🚁</span>
+        <span style="top:82%;left:1%;font-size:18px;animation-delay:1.8s">⭐</span>
+        <span style="top:90%;right:5%;font-size:22px;animation-delay:0.9s">🌟</span>
+    </div>
+
     <div class="container">
         <!-- 页面头部 -->
         <header class="header">
@@ -57,6 +69,13 @@
                 <p class="subtitle">Find live hits, boost your Amazon sales.</p>
             </div>
         </header>
+
+        <!-- 波浪分割 -->
+        <div class="wave-divider">
+            <svg viewBox="0 0 1200 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0,30 C150,60 350,0 600,30 C850,60 1050,0 1200,30 L1200,60 L0,60 Z" fill="white"/>
+            </svg>
+        </div>
 
         <!-- 搜索区域 -->
         <section class="search-section">
@@ -114,7 +133,7 @@
                     <span id="runCost" class="stat-value">$0.00</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-label">Updated</span>
+                    <span class="stat-label">Run Time</span>
                     <span id="updateTime" class="stat-value">--</span>
                 </div>
             </div>
@@ -199,8 +218,7 @@
         <!-- 页脚 -->
         <footer class="footer">
             <p>💡 Tip: First search may take a while, please be patient</p>
-            <p>API: <code id="apiUrl">http://localhost:3000</code></p>
-            <p>© 2026 LiveHitFinder | Powered by Apify</p>
+            <p>© 2026 LiveHitFinder | Powered by Vernon__</p>
         </footer>
     </div>
 

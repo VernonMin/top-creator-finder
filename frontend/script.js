@@ -27,8 +27,6 @@ const DOM = {
     loadingStatusText: document.getElementById('loadingStatusText'),
     loadingTipsText: document.getElementById('loadingTipsText'),
     copyToast: document.getElementById('copyToast'),
-    apiUrl: document.getElementById('apiUrl'),
-
     // 标签页
     tabBtns: document.querySelectorAll('.tab-btn'),
     tabContents: document.querySelectorAll('.tab-content'),
@@ -70,9 +68,6 @@ const state = {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Page loaded, initializing...');
-
-    // 设置 API 地址显示
-    DOM.apiUrl.textContent = API_BASE_URL;
 
     // 事件监听
     DOM.searchBtn.addEventListener('click', handleSearch);
@@ -291,7 +286,7 @@ function displayResults(data) {
     DOM.topCreatorsCount.textContent = stats.topCreatorsCount;
     DOM.topCreatorPercentage.textContent = stats.topCreatorPercentage + '%';
     DOM.runCost.textContent = formatCost(stats.costUsd);
-    DOM.updateTime.textContent = formatTime(stats.timestamp);
+    DOM.updateTime.textContent = formatRunTime(stats.startedAt, stats.finishedAt);
 
     // 更新计数
     DOM.topCount.textContent = topCreators.length;
@@ -564,11 +559,14 @@ function escapeHtml(text) {
 /**
  * 格式化时间
  */
-function formatTime(timestamp) {
-    const date = new Date(timestamp);
-    const hours = String(date.getHours()).padStart(2, '0');
-    const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
+function formatRunTime(startedAt, finishedAt) {
+    if (!startedAt) return '--';
+    const end = finishedAt ? new Date(finishedAt) : new Date();
+    const secs = Math.floor((end - new Date(startedAt)) / 1000);
+    if (secs < 60) return `${secs}s`;
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}m ${s}s`;
 }
 
 function formatCost(costUsd) {
@@ -583,12 +581,15 @@ function formatCost(costUsd) {
 // History
 // ============================================
 
+let _historyRuns = [];
+
 async function loadHistory() {
     try {
         const response = await fetch(`${API_BASE_URL}/history`);
         if (!response.ok) return;
         const data = await response.json();
         if (!data.success) return;
+        _historyRuns = data.runs;
         renderHistory(data.runs);
 
         // 自动恢复最近一条未完成的任务
@@ -619,7 +620,7 @@ function renderHistory(runs) {
 
         const hasCreators = run.creators && run.creators.length > 0;
         const viewBtn = hasCreators
-            ? `<button class="hi-view" onclick="openModal(${JSON.stringify(JSON.stringify(run.creators))}, '${escapeHtml(run.category)}', '${time}')">View</button>`
+            ? `<button class="hi-view" onclick="openModal('${escapeHtml(run.id)}')">View</button>`
             : '';
 
         return `
@@ -634,9 +635,12 @@ function renderHistory(runs) {
     }).join('');
 }
 
-function openModal(creatorsJson, category, time) {
-    const creators = JSON.parse(creatorsJson);
-    document.getElementById('modalTitle').textContent = `${category} — ${time}`;
+function openModal(runId) {
+    const run = _historyRuns.find(r => r.id === runId);
+    if (!run) return;
+    const creators = run.creators || [];
+    const time = new Date(run.started_at).toLocaleString();
+    document.getElementById('modalTitle').textContent = `${run.category} — ${time}`;
     const body = document.getElementById('modalBody');
 
     if (!creators || creators.length === 0) {

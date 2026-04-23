@@ -63,6 +63,8 @@ function buildSearchPayload(items, { category, country, maxResults, run }) {
         timestamp: new Date().toISOString(),
         runStatus: run.status,
         isFinished: TERMINAL_STATUSES.has(run.status),
+        startedAt: run.startedAt || null,
+        finishedAt: run.finishedAt || null,
     };
 
     return {
