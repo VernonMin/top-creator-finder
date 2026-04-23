@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 async function handleSearch() {
     const category = DOM.categorySelect.value.trim();
-    const maxResults = parseInt(DOM.maxResultsInput.value) || 50;
+    const maxResults = parseInt(DOM.maxResultsInput.value) || 1;
 
     // 验证输入
     if (!category) {
