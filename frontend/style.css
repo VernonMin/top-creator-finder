@@ -324,14 +324,14 @@ body {
 }
 
 .btn-primary {
-    background: var(--red);
+    background: var(--blue);
     color: white;
-    box-shadow: 0 4px 12px rgba(232,0,45,0.28);
+    box-shadow: 0 4px 12px rgba(0,153,230,0.28);
 }
 
 .btn-primary:hover {
-    background: #c8001f;
-    box-shadow: 0 6px 16px rgba(232,0,45,0.36);
+    background: var(--blue-dark);
+    box-shadow: 0 6px 16px rgba(0,153,230,0.36);
     transform: translateY(-1px);
 }
 
