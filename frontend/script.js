@@ -590,6 +590,12 @@ async function loadHistory() {
         const data = await response.json();
         if (!data.success) return;
         renderHistory(data.runs);
+
+        // 自动恢复最近一条未完成的任务
+        const running = data.runs.find(r => !r.is_finished);
+        if (running && !state.currentSearch) {
+            resumeRun(running.id, running.category, running.max_results);
+        }
     } catch (e) {
         console.warn('Failed to load history:', e.message);
     }

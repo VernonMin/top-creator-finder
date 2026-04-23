@@ -91,7 +91,7 @@ async function getDatasetItems(datasetId) {
 export async function startTopCreatorsSearch(category, maxResults = 50, country = 'US') {
     console.log(`[Apify] Starting actor: category=${category} maxResults=${maxResults}`);
 
-    const run = await apifyPost(`/acts/${actorPath()}/runs`, { category, maxResults });
+    const run = await apifyPost(`/acts/${actorPath()}/runs?timeout=600&memory=2048`, { category, maxResults });
     console.log(`[Apify] Run started: ${run.id} (status: ${run.status})`);
 
     await upsertRun({
