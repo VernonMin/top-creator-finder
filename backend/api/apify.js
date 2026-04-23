@@ -120,7 +120,7 @@ export async function startTopCreatorsSearch(category, maxResults = 50, country 
 }
 
 export async function getTopCreatorsSearchStatus(runId, category, maxResults = 50, country = 'US') {
-    const run = await apifyGet(`/acts/${actorPath()}/runs/${runId}`);
+    const run = await apifyGet(`/actor-runs/${runId}`);
     const items = await getDatasetItems(run.defaultDatasetId);
 
     console.log(`[Apify] Run ${runId}: ${run.status} (${items.length} result(s))`);
