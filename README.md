@@ -16,15 +16,15 @@
 ```
 用户输入品类（如"electronics"）
        ↓
-后端调用 Actor 1（Amazon Live 爬虫）
+前端调用同源后端 API
        ↓
-爬虫返回该品类所有创作者列表
+后端启动 Amazon Live Top Creator Actor
        ↓
-后端调用 Actor 2（Profile 验证）
+Actor 抓取 broadcast 与 shop 页面
        ↓
 验证每个创作者的 Top Creator 状态
        ↓
-合并数据并返回给前端
+后端读取 Actor dataset 并返回给前端
        ↓
 前端展示结果（表格、统计、操作）
 ```
@@ -83,10 +83,8 @@ top-creator-finder/
 # 进入项目目录
 cd /Users/minzhuo/develop/ai-project/top-creator-finder
 
-# 进入后端目录
+# 安装后端依赖
 cd backend
-
-# 安装依赖
 npm install
 
 # 创建环境变量文件
@@ -96,7 +94,6 @@ cp .env.example .env
 # 需要填写：
 #  - APIFY_API_TOKEN: 你的 Apify Token
 #  - APIFY_AMAZON_LIVE_SCRAPER_ID: 你上传的 Actor ID
-#  - APIFY_PROFILE_SCRAPER_ID: igview-owner/amazon-influencers-profile-scraper
 ```
 
 **重要**：在 `.env` 文件中填入以下内容：
@@ -104,10 +101,9 @@ cp .env.example .env
 ```env
 APIFY_API_TOKEN=your_actual_token_here
 APIFY_AMAZON_LIVE_SCRAPER_ID=yourname/amazon-live-creators-scraper
-APIFY_PROFILE_SCRAPER_ID=igview-owner/amazon-influencers-profile-scraper
 ```
 
-### 第 2 步：启动后端
+### 第 2 步：启动应用
 
 ```bash
 # 在 backend 目录中运行
@@ -116,6 +112,10 @@ npm start
 # 成功启动后会显示：
 # ✓ Server running at: http://localhost:3000
 ```
+
+应用启动后，Express 会同时提供：
+- `/api/*` API 接口
+- `/` 前端页面
 
 ### 第 3 步：测试后端连接
 
@@ -139,20 +139,7 @@ curl -X POST http://localhost:3000/api/search \
 在浏览器中打开：
 
 ```
-http://localhost:3000/../frontend/index.html
-```
-
-或者直接打开文件：
-
-```bash
-# 在 macOS 上
-open frontend/index.html
-
-# 在 Windows 上
-start frontend/index.html
-
-# 在 Linux 上
-xdg-open frontend/index.html
+http://localhost:3000
 ```
 
 ### 第 5 步：使用应用
@@ -222,9 +209,14 @@ xdg-open frontend/index.html
 ```json
 {
   "success": true,
-  "categories": ["featured", "electronics", "fashion", "beauty", ...]
+  "categories": [
+    { "value": "featured", "label": "📌 所有精选创作者" },
+    { "value": "electronics", "label": "🔌 电子产品" }
+  ]
 }
 ```
+
+前端页面会在加载时调用该接口动态渲染品类下拉框，后续新增或修改品类只需要更新后端配置。
 
 ### 健康检查
 

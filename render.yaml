@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: top-creator-finder
+    runtime: node
+    rootDir: backend
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: APIFY_API_TOKEN
+        sync: false
+      - key: APIFY_AMAZON_LIVE_SCRAPER_ID
+        sync: false

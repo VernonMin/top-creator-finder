@@ -1,0 +1,17 @@
+export const categories = [
+    { value: 'featured', label: '📌 所有精选创作者' },
+    { value: 'electronics', label: '🔌 电子产品' },
+    { value: 'fashionandbeauty', label: '👗 fashion & beauty' },
+    { value: 'beauty', label: '💄 美妆' },
+    { value: 'fitness', label: '💪 健身' },
+    { value: 'food', label: '🍽️ 食物' },
+    { value: 'home', label: '🏠 家居' },
+    { value: 'garden', label: '🌱 园艺' },
+    { value: 'pets', label: '🐾 宠物' },
+    { value: 'sports', label: '⚽ 运动' },
+    { value: 'toys', label: '🎮 玩具' },
+    { value: 'books', label: '📚 图书' },
+    { value: 'music', label: '🎵 音乐' },
+    { value: 'movies', label: '🎬 电影' },
+    { value: 'jewelry', label: '💍 珠宝' },
+];

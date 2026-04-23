@@ -9,6 +9,7 @@ import {
     getTopCreatorsByCategory,
     testApifyConnection
 } from './apify.js';
+import { categories } from '../config/categories.js';
 
 const router = express.Router();
 
@@ -93,28 +94,9 @@ router.post('/search', async (req, res) => {
  * }
  */
 router.get('/categories', (req, res) => {
-    // 支持的品类列表（基于 Amazon Live）
-    const categories = [
-        'featured',     // 所有精选创作者
-        'electronics',
-        'fashion',
-        'beauty',
-        'fitness',
-        'food',
-        'home',
-        'garden',
-        'pets',
-        'sports',
-        'toys',
-        'books',
-        'music',
-        'movies',
-        'jewelry'
-    ];
-
     return res.json({
         success: true,
-        categories: categories
+        categories
     });
 });
 

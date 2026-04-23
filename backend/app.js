@@ -8,6 +8,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import apiRoutes from './api/routes.js';
 
 // 加载环境变量
@@ -31,6 +33,9 @@ if (missingEnvVars.length > 0) {
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || 'localhost';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendDir = path.resolve(__dirname, '../frontend');
 
 // ============================================
 // 中间件配置
@@ -73,8 +78,15 @@ app.use((req, res, next) => {
 // API 路由
 app.use('/api', apiRoutes);
 
+// 托管前端静态资源
+app.use(express.static(frontendDir));
+
 // 根路由
 app.get('/', (req, res) => {
+    return res.sendFile(path.join(frontendDir, 'index.html'));
+});
+
+app.get('/api', (req, res) => {
     return res.json({
         name: 'Top Creator Finder Backend',
         version: '1.0.0',

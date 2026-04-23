@@ -11,8 +11,8 @@
 // 配置
 // ============================================
 
-// API 地址（需要根据实际部署改变）
-const API_BASE_URL = 'http://localhost:3000/api';
+// API 地址使用同源相对路径，便于和后端一起部署
+const API_BASE_URL = '/api';
 
 // DOM 元素缓存
 const DOM = {
@@ -82,6 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
     DOM.maxResultsInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleSearch();
     });
+
+    loadCategories();
 
     console.log('✓ Initialization complete');
 });
@@ -162,6 +164,34 @@ async function search(category, maxResults) {
     } finally {
         showLoading(false);
     }
+}
+
+async function loadCategories() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/categories`);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (!data.success || !Array.isArray(data.categories)) {
+            throw new Error('Invalid categories response');
+        }
+
+        renderCategories(data.categories);
+    } catch (error) {
+        console.error('Failed to load categories:', error);
+        showError('加载品类列表失败，请刷新页面重试');
+    }
+}
+
+function renderCategories(categories) {
+    const placeholder = '<option value="">-- 选择一个品类 --</option>';
+    const options = categories.map(({ value, label }) =>
+        `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`
+    );
+
+    DOM.categorySelect.innerHTML = placeholder + options.join('');
 }
 
 // ============================================
