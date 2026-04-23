@@ -13,6 +13,7 @@
 
 // API 地址使用同源相对路径，便于和后端一起部署
 const API_BASE_URL = '/api';
+const POLL_INTERVAL_MS = 5000;
 
 // DOM 元素缓存
 const DOM = {
@@ -23,6 +24,8 @@ const DOM = {
     statsContainer: document.getElementById('statsContainer'),
     resultsSection: document.getElementById('resultsSection'),
     loadingContainer: document.getElementById('loadingContainer'),
+    loadingStatusText: document.getElementById('loadingStatusText'),
+    loadingTipsText: document.getElementById('loadingTipsText'),
     copyToast: document.getElementById('copyToast'),
     apiUrl: document.getElementById('apiUrl'),
 
@@ -54,8 +57,10 @@ const DOM = {
 // 全局状态
 const state = {
     currentResults: null,
+    currentSearch: null,
     currentTab: 'top-creators',
-    sortBy: 'posts' // 'posts' 或 'name'
+    sortBy: 'posts', // 'posts' 或 'name'
+    pollTimer: null,
 };
 
 // ============================================
@@ -122,13 +127,15 @@ async function search(category, maxResults) {
 
     // 隐藏错误提示
     hideError();
+    stopPolling();
 
     // 显示加载提示
     showLoading(true);
     DOM.resultsSection.style.display = 'none';
+    DOM.statsContainer.style.display = 'none';
+    updateLoadingText('正在启动抓取任务...', '任务启动后会自动轮询最新结果');
 
     try {
-        // 调用后端 API
         const response = await fetch(`${API_BASE_URL}/search`, {
             method: 'POST',
             headers: {
@@ -147,22 +154,88 @@ async function search(category, maxResults) {
         }
 
         const data = await response.json();
-
         if (!data.success) {
             throw new Error(data.error || 'Unknown error');
         }
 
-        // 保存结果
-        state.currentResults = data.data;
+        state.currentSearch = {
+            runId: data.data.runId,
+            category,
+            country: 'US',
+            maxResults,
+        };
 
-        // 显示结果
-        displayResults(data.data);
+        updateLoadingText(
+            `任务已启动，正在抓取 ${category} 类目创作者...`,
+            `任务 ID: ${data.data.runId}`
+        );
+
+        const shouldContinuePolling = await pollSearchStatus();
+        if (shouldContinuePolling) {
+            state.pollTimer = window.setInterval(pollSearchStatus, POLL_INTERVAL_MS);
+        }
 
     } catch (error) {
         console.error('Search error:', error);
         showError(`搜索失败：${error.message}`);
-    } finally {
         showLoading(false);
+    } finally {
+        // 轮询模式下，由 pollSearchStatus 控制何时结束 loading
+    }
+}
+
+async function pollSearchStatus() {
+    if (!state.currentSearch) {
+        return false;
+    }
+
+    const { runId, category, country, maxResults } = state.currentSearch;
+
+    try {
+        const params = new URLSearchParams({
+            category,
+            country,
+            maxResults: String(maxResults),
+        });
+
+        const response = await fetch(`${API_BASE_URL}/search/${runId}?${params.toString()}`);
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `HTTP ${response.status}`);
+        }
+
+        const payload = await response.json();
+        if (!payload.success) {
+            throw new Error(payload.error || 'Unknown error');
+        }
+
+        const data = payload.data;
+        state.currentResults = data;
+        displayResults(data);
+
+        if (data.isFinished) {
+            stopPolling();
+            showLoading(false);
+
+            if (data.status !== 'SUCCEEDED') {
+                showError(`任务结束，状态为 ${data.status}`);
+            } else {
+                updateLoadingText('抓取完成', `共找到 ${data.topCreators.length} 个 Top Creator`);
+            }
+            return false;
+        }
+
+        updateLoadingText(
+            `任务运行中：${data.status}`,
+            `已发现 ${data.topCreators.length} 个 Top Creator，页面会自动刷新`
+        );
+        return true;
+    } catch (error) {
+        stopPolling();
+        showLoading(false);
+        console.error('Polling error:', error);
+        showError(`查询任务状态失败：${error.message}`);
+        return false;
     }
 }
 
@@ -435,6 +508,11 @@ function showLoading(show) {
     }
 }
 
+function updateLoadingText(status, tips) {
+    DOM.loadingStatusText.textContent = status;
+    DOM.loadingTipsText.textContent = tips;
+}
+
 /**
  * 显示错误提示
  */
@@ -448,6 +526,13 @@ function showError(message) {
  */
 function hideError() {
     DOM.errorMessage.style.display = 'none';
+}
+
+function stopPolling() {
+    if (state.pollTimer) {
+        window.clearInterval(state.pollTimer);
+        state.pollTimer = null;
+    }
 }
 
 // ============================================

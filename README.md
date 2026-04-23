@@ -18,13 +18,13 @@
        ↓
 前端调用同源后端 API
        ↓
-后端启动 Amazon Live Top Creator Actor
+后端启动 Amazon Live Top Creator Actor 并立即返回 runId
        ↓
-Actor 抓取 broadcast 与 shop 页面
+前端轮询任务状态接口
        ↓
-验证每个创作者的 Top Creator 状态
+Actor 抓取 broadcast 与 shop 页面，并把结果增量写入 dataset
        ↓
-后端读取 Actor dataset 并返回给前端
+后端持续读取当前 dataset 结果并返回给前端
        ↓
 前端展示结果（表格、统计、操作）
 ```
@@ -147,7 +147,7 @@ http://localhost:3000
 1. 在下拉菜单中**选择品类**（如 "electronics"）
 2. 设置**最多结果数**（默认 50）
 3. 点击 **🔍 搜索** 按钮
-4. 等待爬虫和验证完成（通常需要 30-60 秒）
+4. 页面会自动轮询任务状态，并逐步展示已验证出的结果
 5. 查看结果：
    - **⭐ Top Creator** - 官方认证的 Platinum 级创作者
    - **📋 所有创作者** - 包括其他等级的创作者
@@ -159,7 +159,7 @@ http://localhost:3000
 
 ## API 文档
 
-### 搜索 Top Creator
+### 启动搜索任务
 
 **端点**：`POST /api/search`
 
@@ -177,25 +177,52 @@ http://localhost:3000
 {
   "success": true,
   "data": {
+    "runId": "abc123",
+    "datasetId": "xyz456",
+    "status": "READY",
+    "isFinished": false,
+    "category": "electronics",
+    "country": "US",
+    "maxResults": 50
+  }
+}
+```
+
+### 查询搜索任务状态和当前结果
+
+**端点**：`GET /api/search/:runId?category=electronics&country=US&maxResults=50`
+
+**响应**：
+```json
+{
+  "success": true,
+  "data": {
+    "runId": "abc123",
+    "datasetId": "xyz456",
+    "status": "RUNNING",
+    "isFinished": false,
     "topCreators": [
       {
         "username": "tech_reviewer",
         "displayName": "Tech Reviewer",
-        "bio": "Latest gadgets and reviews",
+        "bio": "",
         "profileUrl": "https://amazon.com/shop/tech_reviewer",
         "topCreatorStatus": true,
-        "postsCount": 245,
+        "postsCount": 0,
         "timestamp": "2026-04-23T10:30:00Z"
       }
     ],
     "allCreators": [...],
     "stats": {
-      "totalCreators": 50,
-      "topCreatorsCount": 12,
-      "topCreatorPercentage": "24.00",
+      "totalCreators": 1,
+      "topCreatorsCount": 1,
+      "topCreatorPercentage": "100.00",
       "category": "electronics",
       "country": "US",
-      "timestamp": "2026-04-23T10:30:00Z"
+      "maxResults": 50,
+      "timestamp": "2026-04-23T10:30:00Z",
+      "runStatus": "RUNNING",
+      "isFinished": false
     }
   }
 }
@@ -255,7 +282,7 @@ http://localhost:3000
 
 ### 性能指标
 
-- **爬虫速度**：通常 30-60 秒（包括爬虫和验证）
+- **结果返回方式**：异步轮询，结果会逐步显示
 - **创作者数量**：支持 1-500 个创作者
 - **Top Creator 识别准确率**：95%+
 - **数据刷新频率**：可设置为每周或每月自动更新

@@ -6,7 +6,8 @@
 
 import express from 'express';
 import {
-    getTopCreatorsByCategory,
+    getTopCreatorsSearchStatus,
+    startTopCreatorsSearch,
     testApifyConnection
 } from './apify.js';
 import { categories } from '../config/categories.js';
@@ -24,15 +25,7 @@ const router = express.Router();
  *   "country": "US"             // 国家代码（可选，默认US）
  * }
  *
- * 返回：
- * {
- *   "success": true,
- *   "data": {
- *     "topCreators": [...],
- *     "allCreators": [...],
- *     "stats": {...}
- *   }
- * }
+ * 返回任务信息，前端随后轮询 GET /api/search/:runId
  *
  * 错误返回：
  * {
@@ -63,10 +56,8 @@ router.post('/search', async (req, res) => {
 
         console.log(`\n[API] POST /api/search - category: ${category}, maxResults: ${max}`);
 
-        // 调用 Apify 获取数据
-        const result = await getTopCreatorsByCategory(category, max, country);
+        const result = await startTopCreatorsSearch(category, max, country);
 
-        // 返回成功结果
         return res.json({
             success: true,
             data: result
@@ -76,6 +67,48 @@ router.post('/search', async (req, res) => {
         console.error('[API] Error in /api/search:', error);
 
         // 返回错误
+        return res.status(500).json({
+            success: false,
+            error: error.message || 'Internal server error'
+        });
+    }
+});
+
+router.get('/search/:runId', async (req, res) => {
+    try {
+        const { runId } = req.params;
+        const { category, country = 'US', maxResults = 50 } = req.query;
+
+        if (!runId || typeof runId !== 'string') {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing or invalid "runId" parameter'
+            });
+        }
+
+        if (!category || typeof category !== 'string' || category.trim() === '') {
+            return res.status(400).json({
+                success: false,
+                error: 'Missing or invalid "category" query parameter'
+            });
+        }
+
+        const max = Math.min(parseInt(maxResults) || 50, 500);
+        if (max < 1) {
+            return res.status(400).json({
+                success: false,
+                error: 'maxResults must be at least 1'
+            });
+        }
+
+        const result = await getTopCreatorsSearchStatus(runId, category, max, country);
+
+        return res.json({
+            success: true,
+            data: result
+        });
+    } catch (error) {
+        console.error('[API] Error in GET /api/search/:runId:', error);
         return res.status(500).json({
             success: false,
             error: error.message || 'Internal server error'

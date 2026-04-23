@@ -275,14 +275,17 @@ for (const username of collectedUsernames) {
 
         console.log(`  ✓ Top Creator: ${displayName} (${realUsername})`);
 
-        topCreators.push({
+        const creator = {
             username: realUsername,
             displayName,
             shopUrl: realShopUrl,
             isTopCreator: true,
             category,
             scrapedAt: new Date().toISOString(),
-        });
+        };
+
+        topCreators.push(creator);
+        await Actor.pushData(creator);
 
     } catch (err) {
         console.error(`Error verifying ${username}: ${err.message}`);
@@ -290,9 +293,5 @@ for (const username of collectedUsernames) {
 }
 
 console.log(`\n=== Done: ${topCreators.length} Top Creators ===`);
-
-if (topCreators.length > 0) {
-    await Actor.pushData(topCreators);
-}
 
 await Actor.exit();
