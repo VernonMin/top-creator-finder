@@ -196,12 +196,17 @@ function deriveUsernameCandidates(displayName) {
     ];
 }
 
-// ─── Steps 2-4: Process each broadcast ───────────────────────────────────────
+// ─── Steps 2-4: Process broadcasts and verify usernames incrementally ───────
 
-// Phase 1: collect all unique usernames from broadcast pages
-const collectedUsernames = new Set();
+const seenUsernames = new Set();
+const topCreators = [];
 
 for (const { uuid } of broadcastList) {
+    if (topCreators.length >= maxResults) {
+        console.log(`Reached maxResults=${maxResults}, stopping broadcast processing`);
+        break;
+    }
+
     try {
         const broadcastUrl = `https://www.amazon.com/live/broadcast/${uuid}`;
         console.log(`\nCollecting from ${broadcastUrl}`);
@@ -210,7 +215,6 @@ for (const { uuid } of broadcastList) {
 
         if (status !== 200) {
             console.log(`  Skip: HTTP ${status}`);
-            await sleep(500);
             continue;
         }
 
@@ -224,71 +228,68 @@ for (const { uuid } of broadcastList) {
         // Collect ALL creatorProfileLinks from this page (broadcaster + sidebar creators)
         const matches = [...html.matchAll(/creatorProfileLink[^/]{0,30}\/shop\/([^"\\&#\s\/]+)/g)];
         let added = 0;
+
         for (const m of matches) {
+            if (topCreators.length >= maxResults) {
+                console.log(`Reached maxResults=${maxResults}, stopping username verification`);
+                break;
+            }
+
             const username = m[1];
-            if (username && username !== 'info' && !collectedUsernames.has(username)) {
-                collectedUsernames.add(username);
-                added++;
+            if (!username || username === 'info' || seenUsernames.has(username)) {
+                continue;
+            }
+
+            seenUsernames.add(username);
+            added++;
+
+            try {
+                await sleep(600);
+                const shopUrl = `https://www.amazon.com/shop/${username}`;
+                console.log(`\nVerifying ${shopUrl}`);
+
+                const { status: shopStatus, html: shopHtml, finalUrl } = await httpGet(shopUrl);
+
+                if (shopStatus !== 200) {
+                    console.log(`  Skip: HTTP ${shopStatus}`);
+                    continue;
+                }
+
+                if (!shopHtml.includes('Top Creator')) {
+                    console.log('  Skip: not a Top Creator');
+                    continue;
+                }
+
+                // Use real username from final URL (resolves influencer-XXXXXXXX → custom username)
+                const realUsername = finalUrl.match(/\/shop\/([^/?#]+)/)?.[1] || username;
+                const realShopUrl = `https://www.amazon.com/shop/${realUsername}`;
+
+                // Extract display name from shop page title
+                const titleMatch = shopHtml.match(/<title>([^<|]+)/);
+                const displayName = titleMatch ? titleMatch[1].replace(/ [-|:].*$/, '').trim() : realUsername;
+
+                console.log(`  ✓ Top Creator: ${displayName} (${realUsername})`);
+
+                const creator = {
+                    username: realUsername,
+                    displayName,
+                    shopUrl: realShopUrl,
+                    isTopCreator: true,
+                    category,
+                    scrapedAt: new Date().toISOString(),
+                };
+
+                topCreators.push(creator);
+                await Actor.pushData(creator);
+            } catch (err) {
+                console.error(`Error verifying ${username}: ${err.message}`);
             }
         }
-        console.log(`  Collected ${added} new usernames (total: ${collectedUsernames.size})`);
 
+        console.log(`  Collected ${added} new usernames from broadcast (total seen: ${seenUsernames.size})`);
         await sleep(500);
-
     } catch (err) {
         console.error(`Error collecting from UUID ${uuid}: ${err.message}`);
-    }
-}
-
-console.log(`\nPhase 1 done: ${collectedUsernames.size} unique usernames collected`);
-
-// Phase 2: verify Top Creator for each unique username
-const topCreators = [];
-
-for (const username of collectedUsernames) {
-    if (topCreators.length >= maxResults) break;
-
-    try {
-        await sleep(600);
-        const shopUrl = `https://www.amazon.com/shop/${username}`;
-        console.log(`\nVerifying ${shopUrl}`);
-
-        const { status, html, finalUrl } = await httpGet(shopUrl);
-
-        if (status !== 200) {
-            console.log(`  Skip: HTTP ${status}`);
-            continue;
-        }
-
-        if (!html.includes('Top Creator')) {
-            console.log('  Skip: not a Top Creator');
-            continue;
-        }
-
-        // Use real username from final URL (resolves influencer-XXXXXXXX → custom username)
-        const realUsername = finalUrl.match(/\/shop\/([^/?#]+)/)?.[1] || username;
-        const realShopUrl = `https://www.amazon.com/shop/${realUsername}`;
-
-        // Extract display name from shop page title
-        const titleMatch = html.match(/<title>([^<|]+)/);
-        const displayName = titleMatch ? titleMatch[1].replace(/ [-|:].*$/, '').trim() : realUsername;
-
-        console.log(`  ✓ Top Creator: ${displayName} (${realUsername})`);
-
-        const creator = {
-            username: realUsername,
-            displayName,
-            shopUrl: realShopUrl,
-            isTopCreator: true,
-            category,
-            scrapedAt: new Date().toISOString(),
-        };
-
-        topCreators.push(creator);
-        await Actor.pushData(creator);
-
-    } catch (err) {
-        console.error(`Error verifying ${username}: ${err.message}`);
     }
 }
 
