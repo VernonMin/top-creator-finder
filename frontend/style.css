@@ -235,17 +235,17 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 15px;
-    height: 15px;
+    width: 13px;
+    height: 13px;
     background: var(--blue);
     color: white;
     border-radius: 50%;
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 800;
     cursor: default;
     position: relative;
-    vertical-align: middle;
-    margin-left: 4px;
+    vertical-align: super;
+    margin-left: 2px;
 }
 
 .tooltip-wrap .tooltip-text {

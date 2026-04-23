@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CreatorHitFinder</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='50' fill='%230099E6'/><text x='50' y='68' font-size='52' font-family='Nunito,Arial,sans-serif' font-weight='900' fill='white' text-anchor='middle'>C</text></svg>">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -229,7 +230,10 @@
         <div class="modal">
             <div class="modal-header">
                 <h3 id="modalTitle">Top Creators</h3>
-                <button class="modal-close" onclick="closeModal()">✕</button>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <button class="btn btn-secondary" id="modalExportBtn" style="height:30px;font-size:12px;padding:0 12px">📥 Export CSV</button>
+                    <button class="modal-close" onclick="closeModal()">✕</button>
+                </div>
             </div>
             <div id="modalBody" class="modal-body"></div>
         </div>

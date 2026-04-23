@@ -658,6 +658,20 @@ function openModal(runId) {
     }
 
     document.getElementById('historyModal').style.display = 'flex';
+
+    document.getElementById('modalExportBtn').onclick = () => exportModalCSV(creators, run.category, time);
+}
+
+function exportModalCSV(creators, category, time) {
+    if (!creators || creators.length === 0) return;
+    const headers = ['Username', 'Display Name', 'Shop URL'];
+    const rows = creators.map(c => [c.username, c.displayName, c.profileUrl].join(','));
+    const csv = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `top-creators-${category}-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
 }
 
 function closeModal() {
