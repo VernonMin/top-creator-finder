@@ -1,3 +1,5 @@
+import { upsertRun } from '../db.js';
+
 const BASE_URL = 'https://api.apify.com/v2';
 const TERMINAL_STATUSES = new Set(['SUCCEEDED', 'FAILED', 'ABORTED', 'TIMED-OUT']);
 
@@ -92,6 +94,18 @@ export async function startTopCreatorsSearch(category, maxResults = 50, country 
     const run = await apifyPost(`/acts/${actorPath()}/runs`, { category, maxResults });
     console.log(`[Apify] Run started: ${run.id} (status: ${run.status})`);
 
+    await upsertRun({
+        runId: run.id,
+        category,
+        maxResults,
+        country,
+        status: run.status,
+        topCreatorsCount: 0,
+        totalCreators: 0,
+        costUsd: null,
+        isFinished: false,
+    });
+
     return {
         runId: run.id,
         datasetId: run.defaultDatasetId,
@@ -109,7 +123,21 @@ export async function getTopCreatorsSearchStatus(runId, category, maxResults = 5
 
     console.log(`[Apify] Run ${runId}: ${run.status} (${items.length} result(s))`);
 
-    return buildSearchPayload(items, { category, country, maxResults, run });
+    const payload = buildSearchPayload(items, { category, country, maxResults, run });
+
+    await upsertRun({
+        runId,
+        category,
+        maxResults,
+        country,
+        status: run.status,
+        topCreatorsCount: payload.stats.topCreatorsCount,
+        totalCreators: payload.stats.totalCreators,
+        costUsd: payload.stats.costUsd,
+        isFinished: payload.isFinished,
+    });
+
+    return payload;
 }
 
 export async function testApifyConnection() {

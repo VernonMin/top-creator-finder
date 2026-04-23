@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     loadCategories();
+    loadHistory();
 
     console.log('✓ Initialization complete');
 });
@@ -107,12 +108,12 @@ async function handleSearch() {
 
     // 验证输入
     if (!category) {
-        showError('请选择一个品类');
+        showError('Please select a category');
         return;
     }
 
     if (maxResults < 1 || maxResults > 500) {
-        showError('结果数必须在 1 到 500 之间');
+        showError('Max results must be between 1 and 500');
         return;
     }
 
@@ -134,7 +135,7 @@ async function search(category, maxResults) {
     showLoading(true);
     DOM.resultsSection.style.display = 'none';
     DOM.statsContainer.style.display = 'none';
-    updateLoadingText('正在启动抓取任务...', '任务启动后会自动轮询最新结果');
+    updateLoadingText('Starting scrape job...', 'Results will update automatically once the job starts');
 
     try {
         const response = await fetch(`${API_BASE_URL}/search`, {
@@ -167,18 +168,23 @@ async function search(category, maxResults) {
         };
 
         updateLoadingText(
-            `任务已启动，正在抓取 ${category} 类目创作者...`,
-            `任务 ID: ${data.data.runId}`
+            `Job started, scraping ${category} creators...`,
+            `Job ID: ${data.data.runId}`
         );
 
         const shouldContinuePolling = await pollSearchStatus();
         if (shouldContinuePolling) {
-            state.pollTimer = window.setInterval(pollSearchStatus, POLL_INTERVAL_MS);
+            state.pollTimer = window.setInterval(async () => {
+                const cont = await pollSearchStatus();
+                if (!cont) loadHistory();
+            }, POLL_INTERVAL_MS);
+        } else {
+            loadHistory();
         }
 
     } catch (error) {
         console.error('Search error:', error);
-        showError(`搜索失败：${error.message}`);
+        showError(`Search failed: ${error.message}`);
         showLoading(false);
     } finally {
         // 轮询模式下，由 pollSearchStatus 控制何时结束 loading
@@ -219,23 +225,23 @@ async function pollSearchStatus() {
             showLoading(false);
 
             if (data.status !== 'SUCCEEDED') {
-                showError(`任务结束，状态为 ${data.status}`);
+                showError(`Job ended with status: ${data.status}`);
             } else {
-                updateLoadingText('抓取完成', `共找到 ${data.topCreators.length} 个 Top Creator`);
+                updateLoadingText('Scraping complete', `Found ${data.topCreators.length} Top Creators`);
             }
             return false;
         }
 
         updateLoadingText(
-            `任务运行中：${data.status}`,
-            `已发现 ${data.topCreators.length} 个 Top Creator，页面会自动刷新`
+            `Job running: ${data.status}`,
+            `Found ${data.topCreators.length} Top Creators so far, page refreshing...`
         );
         return true;
     } catch (error) {
         stopPolling();
         showLoading(false);
         console.error('Polling error:', error);
-        showError(`查询任务状态失败：${error.message}`);
+        showError(`Failed to query job status: ${error.message}`);
         return false;
     }
 }
@@ -255,12 +261,12 @@ async function loadCategories() {
         renderCategories(data.categories);
     } catch (error) {
         console.error('Failed to load categories:', error);
-        showError('加载品类列表失败，请刷新页面重试');
+        showError('Failed to load categories, please refresh the page');
     }
 }
 
 function renderCategories(categories) {
-    const placeholder = '<option value="">-- 选择一个品类 --</option>';
+    const placeholder = '<option value="">-- Select a category --</option>';
     const options = categories.map(({ value, label }) =>
         `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`
     );
@@ -371,10 +377,10 @@ function createCreatorRow(creator, index) {
         <td>
             <div class="action-buttons">
                 <button class="btn btn-secondary action-btn" onclick="copyToClipboard('${creator.username}')">
-                    📋 复制
+                    📋 Copy
                 </button>
                 <a href="${creator.profileUrl}" target="_blank" class="btn btn-secondary action-btn">
-                    🔗 店铺
+                    🔗 Shop
                 </a>
             </div>
         </td>
@@ -418,7 +424,7 @@ function toggleSort() {
         renderTable(allCreators, 'allCreators');
     }
 
-    const sortText = state.sortBy === 'posts' ? '↕️ 按热度排序' : '↕️ 按名字排序';
+    const sortText = state.sortBy === 'posts' ? '↕️ Sort by popularity' : '↕️ Sort by name';
     DOM.sortBtn.textContent = sortText;
 
     console.log(`Sort changed to: ${state.sortBy}`);
@@ -436,7 +442,7 @@ function copyToClipboard(text) {
         }, 2000);
     }).catch(err => {
         console.error('Copy failed:', err);
-        alert('复制失败，请手动复制');
+        alert('Copy failed, please copy manually');
     });
 }
 
@@ -445,7 +451,7 @@ function copyToClipboard(text) {
  */
 function exportToCSV() {
     if (!state.currentResults) {
-        showError('没有数据可导出');
+        showError('No data to export');
         return;
     }
 
@@ -455,7 +461,7 @@ function exportToCSV() {
     const dataToExport = state.currentTab === 'top-creators' ? topCreators : allCreators;
 
     // CSV 头
-    const headers = ['用户名', '显示名', '简介', '帖子数', '店铺链接'];
+    const headers = ['Username', 'Display Name', 'Bio', 'Posts', 'Shop URL'];
     const csvContent = [
         headers.join(','),
         ...dataToExport.map(creator =>
@@ -571,6 +577,69 @@ function formatCost(costUsd) {
     }
 
     return `$${costUsd.toFixed(4)}`;
+}
+
+// ============================================
+// History
+// ============================================
+
+async function loadHistory() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/history`);
+        if (!response.ok) return;
+        const data = await response.json();
+        if (!data.success) return;
+        renderHistory(data.runs);
+    } catch (e) {
+        console.warn('Failed to load history:', e.message);
+    }
+}
+
+function renderHistory(runs) {
+    const container = document.getElementById('historyList');
+    if (!runs || runs.length === 0) {
+        container.innerHTML = '<p class="history-empty">No history yet.</p>';
+        return;
+    }
+
+    container.innerHTML = runs.map(run => {
+        const isRunning = !run.is_finished;
+        const statusClass = isRunning ? 'running' : (run.status === 'SUCCEEDED' ? 'succeeded' : 'failed');
+        const statusLabel = isRunning ? 'Running' : run.status;
+        const time = new Date(run.started_at).toLocaleString();
+        const resumeBtn = isRunning
+            ? `<button class="hi-resume" onclick="resumeRun('${run.id}','${run.category}',${run.max_results})">Resume</button>`
+            : '';
+
+        return `
+        <div class="history-item">
+            <span class="hi-category">${escapeHtml(run.category)}</span>
+            <span class="hi-stats">Top: ${run.top_creators_count} / ${run.total_creators} · max ${run.max_results}${run.cost_usd != null ? ` · $${Number(run.cost_usd).toFixed(4)}` : ''}</span>
+            <span class="hi-status ${statusClass}">${statusLabel}</span>
+            <span class="hi-time">${time}</span>
+            ${resumeBtn}
+        </div>`;
+    }).join('');
+}
+
+function resumeRun(runId, category, maxResults) {
+    state.currentSearch = { runId, category, country: 'US', maxResults };
+    showLoading(true);
+    DOM.resultsSection.style.display = 'none';
+    DOM.statsContainer.style.display = 'none';
+    updateLoadingText(`Resuming run for ${category}...`, `Job ID: ${runId}`);
+
+    stopPolling();
+    pollSearchStatus().then(shouldContinue => {
+        if (shouldContinue) {
+            state.pollTimer = window.setInterval(async () => {
+                const cont = await pollSearchStatus();
+                if (!cont) loadHistory();
+            }, POLL_INTERVAL_MS);
+        } else {
+            loadHistory();
+        }
+    });
 }
 
 console.log('✓ Script loaded');

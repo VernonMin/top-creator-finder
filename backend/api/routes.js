@@ -11,6 +11,7 @@ import {
     testApifyConnection
 } from './apify.js';
 import { categories } from '../config/categories.js';
+import { getHistory } from '../db.js';
 
 const router = express.Router();
 
@@ -126,6 +127,16 @@ router.get('/search/:runId', async (req, res) => {
  *   "categories": ["electronics", "fashion", "beauty", ...]
  * }
  */
+router.get('/history', async (req, res) => {
+    try {
+        const runs = await getHistory(30);
+        return res.json({ success: true, runs });
+    } catch (error) {
+        console.error('[API] Error in GET /api/history:', error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 router.get('/categories', (req, res) => {
     return res.json({
         success: true,
